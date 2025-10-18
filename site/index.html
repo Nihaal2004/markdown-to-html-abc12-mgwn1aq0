@@ -1,0 +1,42 @@
+<!doctype html><html><head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net"/>
+<style>body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:20px;max-width:900px;margin:auto}</style>
+<title>Markdown Viewer</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css">
+</head><body>
+<h1 class="h4">Markdown Viewer</h1>
+<div id="markdown-tabs" class="btn-group mb-3" role="tablist">
+  <button class="btn btn-outline-primary active" data-tab="rendered">Rendered</button>
+  <button class="btn btn-outline-secondary" data-tab="source">Source</button>
+</div>
+<div id="markdown-source-label" class="text-muted small mb-2"></div>
+<div id="markdown-word-count" class="badge bg-secondary mb-3"></div>
+<div id="markdown-output"></div>
+<pre id="markdown-source" style="display:none;white-space:pre-wrap"></pre>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/common.min.js"></script>
+<script>
+(async () => {
+  const params = new URL(location.href).searchParams;
+  const srcUrl = params.get('url') || './assets/input.md';
+  document.getElementById('markdown-source-label').textContent = srcUrl;
+  const md = await (await fetch(srcUrl)).text();
+  const out = document.getElementById('markdown-output');
+  const src = document.getElementById('markdown-source');
+  src.textContent = md.trim();
+  marked.setOptions({highlight:(code,lang)=>{try{return hljs.highlight(code,{language:lang}).value;}catch(e){return code;}}});
+  function render(){
+    out.innerHTML = marked.parse(src.textContent);
+    const wc = src.textContent.trim().split(/\s+/).filter(Boolean).length;
+    document.getElementById('markdown-word-count').textContent = new Intl.NumberFormat().format(wc);
+  }
+  render();
+  document.querySelectorAll('#markdown-tabs button').forEach(btn=>{
+    btn.onclick=()=>{ document.querySelectorAll('#markdown-tabs button').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+      const tab=btn.dataset.tab; if(tab==='rendered'){ out.style.display='block'; src.style.display='none'; } else { out.style.display='none'; src.style.display='block'; } };
+  });
+})();
+</script>
+</body></html>
